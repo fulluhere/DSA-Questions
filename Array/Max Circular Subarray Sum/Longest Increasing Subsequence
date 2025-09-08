@@ -1,0 +1,96 @@
+from bisect import bisect_left
+
+class Solution:
+    # 1️⃣ Brute Force (Recursion) where time complexcity is O(2ⁿ)
+    def solve(self, arr, prev, idx):
+        n = len(arr)
+        if idx == n:
+            return 0
+
+        include = 0
+        if prev == -1 or arr[idx] > arr[prev]:
+            include = 1 + self.solve(arr, idx, idx + 1)
+
+        exclude = self.solve(arr, prev, idx + 1)
+
+        return max(include, exclude)
+
+    # ------------------------
+    # As we draw tree structure of Brute force approach we can clearly see
+    # repeatation where we get hint to Dynamic Programming (DP) 
+  
+    # 2️⃣ Recursion + Memoization , where time complexcity getting improve to O(n²)
+    # dp[idx][prev+1] because prev can be -1
+    # ------------------------
+    def solveMem(self, arr, prev, idx, dp):
+        n = len(arr)
+        if idx == n:
+            return 0
+
+        if dp[idx][prev + 1] != -1:
+            return dp[idx][prev + 1]
+
+        include = 0
+        if prev == -1 or arr[idx] > arr[prev]:
+            include = 1 + self.solveMem(arr, idx, idx + 1, dp)
+
+        exclude = self.solveMem(arr, prev, idx + 1, dp)
+
+        dp[idx][prev + 1] = max(include, exclude)
+        return dp[idx][prev + 1]
+
+    # ------------------------
+    # As we draw tree structure of Brute force approach we can clearly see
+    # repeatation where we get hint to Dynamic Programming (DP) 
+
+
+    # As tabulation method quite faster than memoization because it uses less memory(no call stack)
+    # where time complexcity of it is O(n²)
+    # 3️⃣ Tabulation (Bottom-Up)
+    # ------------------------
+    def solveTab(self, arr):
+        n = len(arr)
+        dp = [[0] * (n + 1) for _ in range(n + 1)]
+
+        for idx in range(n - 1, -1, -1):
+            for prev in range(idx - 1, -2, -1):
+                include = 0
+                if prev == -1 or arr[idx] > arr[prev]:
+                    include = 1 + dp[idx + 1][idx + 1]
+
+                exclude = dp[idx + 1][prev + 1]
+                dp[idx][prev + 1] = max(include, exclude)
+
+        return dp[0][0]
+
+    # ------------------------
+
+
+    # Now it is the most optimized one where we use bisect one to optimized
+    # 4️⃣ Binary Search (O(n log n))
+    # ------------------------
+    def lisBinarySearch(self, arr):
+        temp = [arr[0]]
+
+        for num in arr[1:]:
+            if num > temp[-1]:
+                temp.append(num)
+            else:
+                idx = bisect_left(temp, num)
+                temp[idx] = num
+
+        return len(temp)
+
+
+if __name__ == "__main__":
+    arr = [10, 9, 2, 5, 3, 7, 101, 18]
+    sol = Solution()
+
+    print("Brute Force:", sol.solve(arr, -1, 0))
+
+    n = len(arr)
+    dp = [[-1] * (n + 1) for _ in range(n)]
+    print("Memoization:", sol.solveMem(arr, -1, 0, dp))
+
+    print("Tabulation:", sol.solveTab(arr))
+    print("Binary Search:", sol.lisBinarySearch(arr))
