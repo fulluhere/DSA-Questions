@@ -1,0 +1,48 @@
+# Program Explaination
+You’re given an array prices[] where prices[i] is the stock price on the i-th day.
+You can buy on one day and sell on a later day.
+Goal: Find the maximum profit you can make.
+If no profit is possible, return 0.
+
+// Brute Force approach 
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        int maxi = 0;
+
+        // Try every pair (i, j) where i < j
+        for(int i = 0; i < n; i++) {
+            for(int j = i + 1; j < n; j++) {
+                int profit = prices[j] - prices[i];
+                maxi = max(maxi, profit);
+            }
+        }
+        return maxi;
+    }
+};
+
+// Optimized Approach
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int maxi = 0;
+        int mini = INT_MAX;
+
+        for (int price : prices) {
+            mini = min(mini, price);            // update min so far
+            maxi = max(maxi, price - mini);     // update max profit
+        }
+        return maxi;
+    }
+};
+
+// Comparison
+Brute Force Approach: {Time: O(n^2), Space: O(1)}
+Optimized Approach: {Time: O(n), Space: O(1)}
