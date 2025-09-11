@@ -1,0 +1,58 @@
+# Problem: Detect Loop in a Linked List
+You are given the head of a singly linked list. You need to determine if the list contains a loop (cycle).
+A loop exists when the next pointer of some node points back to a previous node in the list instead of pointing to null.
+If pos = 0, the last node points to null (no loop).
+If pos > 0, it means the last node is connected back to the pos-th node (1-based index), creating a cycle.
+
+# Constraints
+1 ≤ number of nodes ≤ 10^5
+1 ≤ node->data ≤ 10^3
+0 ≤ pos ≤ number of nodes
+
+# Brute Force Approach 
+Idea: Keep a hash set of visited nodes. If we visit the same node again, there’s a loop.
+#include <unordered_set>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+
+bool detectLoopBrute(ListNode* head) {
+    unordered_set<ListNode*> visited;
+    while (head) {
+        if (visited.find(head) != visited.end()) 
+            return true;  // node already visited → loop
+        visited.insert(head);
+        head = head->next;
+    }
+    return false;
+}
+
+
+# 2. Optimized Approach (Floyd’s Cycle Detection – Tortoise and Hare)
+Idea: Use two pointers:
+slow moves one step, fast moves two steps.
+If they meet, a loop exists.
+If fast reaches null, no loop.
+
+bool detectLoopOptimized(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+
+    while (fast && fast->next) {
+        slow = slow->next;           // move 1 step
+        fast = fast->next->next;     // move 2 steps
+        if (slow == fast) return true; // loop detected
+    }
+    return false;
+}
+
+# Comparison
+
+Approach	:{Time Complexity,	Space Complexity,	Notes}
+Brute Force (Hashing): {O(n),	O(n),	Easy but uses extra space}
+Floyd’s Cycle Detection	: {O(n), O(1), 	Optimal & preferred solution}
+
