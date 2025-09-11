@@ -1,0 +1,83 @@
+# Problem Summary (Merge Two Sorted Linked Lists):
+Given the heads of two sorted singly linked lists, the task is to merge them into a single sorted linked list and return its head.
+Input: Two sorted linked lists (e.g., 1->3->5 and 2->10->15->20->40)
+Output: A single sorted linked list containing all nodes from both lists in order (e.g., 1->2->3->5->10->15->20->40)
+
+# Constraints:
+Each list has 1 to 1000 nodes
+Node values are between 0 and 10⁵
+
+# Optimal Solution:
+Time Complexity: O(n + m) — traverse both lists once
+Space Complexity: O(1) — merge in-place without extra space
+
+#1. Brute Force Approach (Using Extra Array)
+Idea: Store all node values in an array, sort the array, and rebuild a new linked list.
+
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+
+ListNode* mergeListsBrute(ListNode* l1, ListNode* l2) {
+    vector<int> vals;
+    while (l1) { vals.push_back(l1->val); l1 = l1->next; }
+    while (l2) { vals.push_back(l2->val); l2 = l2->next; }
+
+    sort(vals.begin(), vals.end());
+    ListNode* dummy = new ListNode(0);
+    ListNode* temp = dummy;
+    for (int v : vals) {
+        temp->next = new ListNode(v);
+        temp = temp->next;
+    }
+    return dummy->next;
+}
+
+
+2. Optimized Approach (Iterative, In-Place)
+Idea: Merge while traversing both lists using pointers, without extra memory.
+
+ListNode* mergeListsOptimized(ListNode* l1, ListNode* l2) {
+    ListNode dummy(0);
+    ListNode* tail = &dummy;
+
+    while (l1 && l2) {
+        if (l1->val < l2->val) {
+            tail->next = l1;
+            l1 = l1->next;
+        } else {
+            tail->next = l2;
+            l2 = l2->next;
+        }
+        tail = tail->next;
+    }
+    tail->next = l1 ? l1 : l2; // attach remaining nodes
+    return dummy.next;
+}
+
+3. Recursive Approach
+Idea: Compare heads recursively and build the merged list from the end back.
+
+ListNode* mergeListsRecursive(ListNode* l1, ListNode* l2) {
+    if (!l1) return l2;
+    if (!l2) return l1;
+
+    if (l1->val < l2->val) {
+        l1->next = mergeListsRecursive(l1->next, l2);
+        return l1;
+    } else {
+        l2->next = mergeListsRecursive(l1, l2->next);
+        return l2;
+    }
+}
+
+# Comparision
+Approach :	{Time Complexity,	Space Complexity,	Notes}
+Brute Force	: {O((n+m) log(n+m)),	O(n+m), Uses array + sorting}
+Iterative (Optimized): {O(n+m), O(1),	Preferred in interviews}
+Recursive:	{O(n+m), O(n+m), 	Elegant but uses recursion stack}
