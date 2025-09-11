@@ -1,0 +1,81 @@
+Problem Summary (Reverse Linked List):
+You are given the head of a singly linked list. Your task is to reverse the linked list and return the new head.
+Input: A linked list (e.g., [1,2,3,4,5])
+Output: The reversed linked list (e.g., [5,4,3,2,1])
+
+# 1 - Brute Force Approach
+We first traverse the linked list and store all node values in an array. Then, we traverse the list again and
+overwrite each node’s value from the array in reverse order. This approach uses extra space but is simple to 
+implement.
+
+#include <vector>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+
+ListNode* reverseListBrute(ListNode* head) {
+    if (!head) return nullptr;
+
+    vector<int> vals;
+    ListNode* temp = head;
+    while (temp) {
+        vals.push_back(temp->val);
+        temp = temp->next;
+    }
+
+    temp = head;
+    for (int i = vals.size() - 1; i >= 0; --i) {
+        temp->val = vals[i];
+        temp = temp->next;
+    }
+    return head;
+
+  
+
+  # 2 - Iterative Approach
+  We reverse the linked list in-place by changing the next pointers of nodes while iterating.
+  We maintain three pointers: prev, curr, and nextNode to safely reverse the links. This method
+  is memory-efficient and commonly preferred in interviews.
+
+  
+ListNode* reverseListIterative(ListNode* head) {
+    ListNode* prev = nullptr;
+    ListNode* curr = head;
+
+    while (curr) {
+        ListNode* nextNode = curr->next;  // save next node
+        curr->next = prev;                // reverse pointer
+        prev = curr;                      // move prev forward
+        curr = nextNode;                  // move curr forward
+    }
+    return prev;  // new head
+}
+
+  
+}
+
+#3-Recursive Approach
+We recursively reach the end of the linked list and reverse the pointers while returning back.
+Each node’s next pointer is made to point to itself in reverse order. It’s elegant and clean, 
+but uses stack space proportional to the list length.
+
+ListNode* reverseListRecursive(ListNode* head) {
+    if (!head || !head->next) return head; // base case
+
+    ListNode* newHead = reverseListRecursive(head->next);
+    head->next->next = head; // reverse pointer
+    head->next = nullptr;    // set current node next to null
+
+    return newHead;
+}
+
+#Approach: {Time,	Space,	Notes}
+
+Brute Force:{O(n),	O(n),	Uses extra array}
+Iterative	{O(n),	O(1),	Optimal for interviews}
+Recursive	{O(n),	O(n),	Elegant, uses call stack}
+
