@@ -1,0 +1,95 @@
+## Problem Statement
+Given an array coins[] of different denominations and a target value sum, determine the minimum number of coins needed to make the target sum.
+You have an unlimited supply of each coin.
+If it is not possible to form the sum, return -1.
+
+Example 1
+
+Input:
+coins = [25, 10, 5], sum = 30
+Output: 2
+
+## Constraints
+1 ≤ sum * coins.size() ≤ 10^6
+0 ≤ sum ≤ 10^4
+1 ≤ coins[i] ≤ 10^4
+1 ≤ coins.size() ≤ 10^3
+
+1️⃣ Recursive (Brute Force)
+
+int coinChangeRecursive(vector<int>& coins, int sum) {
+    if (sum == 0) return 0;      // Base case: sum 0 requires 0 coins
+    int ans = INT_MAX;
+    for (int c : coins) {
+        if (c <= sum) {
+            int res = coinChangeRecursive(coins, sum - c);
+            if (res != INT_MAX) ans = min(ans, 1 + res);
+        }
+    }
+    return ans;
+}
+
+// Usage: 
+// int res = coinChangeRecursive(coins, sum);
+// return res == INT_MAX ? -1 : res;
+
+----
+
+2️⃣ Memoization (Top-Down DP)
+
+int coinChangeMemoUtil(vector<int>& coins, int sum, vector<int>& dp) {
+    if (sum == 0) return 0;
+    if (dp[sum] != -1) return dp[sum];
+
+    int ans = INT_MAX;
+    for (int c : coins) {
+        if (c <= sum) {
+            int res = coinChangeMemoUtil(coins, sum - c, dp);
+            if (res != INT_MAX) ans = min(ans, 1 + res);
+        }
+    }
+    return dp[sum] = ans;
+}
+
+int coinChangeMemo(vector<int>& coins, int sum) {
+    vector<int> dp(sum+1, -1);
+    int res = coinChangeMemoUtil(coins, sum, dp);
+    return res == INT_MAX ? -1 : res;
+}
+
+
+                dp[i][w] = dp[i-1][w];
+        }
+    }
+    return dp[n][W];
+}
+
+----
+
+3️⃣ Tabulation (Bottom-Up DP)
+int coinChangeTabulation(vector<int>& coins, int sum) {
+    vector<int> dp(sum+1, INT_MAX);
+    dp[0] = 0;
+
+    for (int s = 1; s <= sum; s++) {
+        for (int c : coins) {
+            if (c <= s && dp[s-c] != INT_MAX) {
+                dp[s] = min(dp[s], 1 + dp[s-c]);
+            }
+        }
+    }
+
+    return dp[sum] == INT_MAX ? -1 : dp[sum];
+}
+
+----
+
+4️⃣ Space Optimized (Already O(sum))
+Bottom-up DP above is already 1D array, so it is space-optimized.
+
+## Complexity Comparison
+Approach:	{Time Complexity,	Space Complexity}
+Recursive: {Exponential,	O(sum)}
+Memoization: {O(coins.size * sum),	O(sum + recursion)}
+Tabulation:	{O(coins.size * sum),	O(sum)}
+Space Optimized:	{O(coins.size * sum),	O(sum)}
