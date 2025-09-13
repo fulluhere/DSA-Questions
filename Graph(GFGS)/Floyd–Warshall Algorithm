@@ -1,0 +1,135 @@
+## Floyd–Warshall Algorithm
+
+🔎 Problem Recap (Floyd–Warshall)
+We’re given a weighted directed graph represented as an adjacency matrix dist[][]:
+dist[i][j] = weight of edge from node i → j.
+If no edge exists, it’s marked as 108 (infinity).
+Negative edges are allowed, but no negative cycles.
+
+Task:
+->Compute shortest distance between every pair of nodes i → j, considering all 
+possible intermediate nodes.
+->Return the updated matrix dist[][].
+
+----
+
+1️⃣ Brute Force (DFS for every pair) → Exponential
+Idea: For each pair (i, j) run DFS exploring all paths → take minimum sum.
+
+#include <bits/stdc++.h>
+using namespace std;
+
+// Brute force DFS
+int dfs(int u, int v, vector<vector<pair<int,int>>>& adj, vector<int>& visited) {
+    if (u == v) return 0;
+    visited[u] = 1;
+    int ans = 1e9;
+    for (auto [nei, w] : adj[u]) {
+        if (!visited[nei]) {
+            int res = dfs(nei, v, adj, visited);
+            if (res != 1e9) ans = min(ans, w + res);
+        }
+    }
+    visited[u] = 0;
+    return ans;
+}
+
+int main() {
+    int V = 3;
+    vector<vector<int>> edges = {{0,1,-1},{0,2,2},{1,2,3}};
+    vector<vector<pair<int,int>>> adj(V);
+    for (auto e : edges) adj[e[0]].push_back({e[1], e[2]});
+
+    for (int i=0; i<V; i++) {
+        for (int j=0; j<V; j++) {
+            vector<int> visited(V,0);
+            int d = dfs(i,j,adj,visited);
+            cout << (d==1e9?108:d) << " ";
+        }
+        cout << endl;
+    }
+}
+
+
+----
+
+
+2️⃣ DP Recursive with Memoization (Path DP) → O(V³)
+int INF = 108;
+
+int main() {
+    int V = 3;
+    vector<vector<int>> dist = {
+        {0, -1, 2},
+        {1, 0, INF},
+        {3, 1, 0}
+    };
+
+    vector<vector<vector<int>>> dp(V+1, vector<vector<int>>(V, vector<int>(V, INF)));
+
+    // Base case: direct distances
+    dp[0] = dist;
+
+    for (int k = 1; k <= V; k++) {
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                if (dp[k-1][i][k-1] != INF && dp[k-1][k-1][j] != INF)
+                    dp[k][i][j] = min(dp[k-1][i][j], dp[k-1][i][k-1] + dp[k-1][k-1][j]);
+                else
+                    dp[k][i][j] = dp[k-1][i][j];
+            }
+        }
+    }
+
+    // Final dp[V] contains all-pairs shortest paths
+    for (int i=0; i<V; i++) {
+        for (int j=0; j<V; j++) cout << dp[V][i][j] << " ";
+        cout << endl;
+    }
+}
+
+----
+
+3️⃣ Optimized Floyd–Warshall (In-place Update) → O(V³) time, O(V²) space
+#include <bits/stdc++.h>
+using namespace std;
+#define INF 108
+
+void floydWarshall(vector<vector<int>>& dist) {
+    int V = dist.size();
+    for (int k = 0; k < V; k++) {
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                if (dist[i][k] != INF && dist[k][j] != INF)
+                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]);
+            }
+        }
+    }
+}
+
+int main() {
+    vector<vector<int>> dist = {
+        {0, -1, 2},
+        {1, 0, INF},
+        {3, 1, 0}
+    };
+
+    floydWarshall(dist);
+
+    for (auto& row : dist) {
+        for (int d : row) cout << d << " ";
+        cout << endl;
+    }
+}
+
+
+----
+
+## Comparison
+
+Approach:	{Time,	Space}
+Brute Force App: 	{Exponential,	O(V)}
+DP 3D (Recursive)	State dp[k][i][j]:	{O(V³), O(V³)}
+Floyd–Warshall (Best)	Iterative update:	{O(V³),	O(V²)}
+
+
