@@ -1,0 +1,56 @@
+⚡ Bellman-Ford Algorithm
+
+🔎 Problem Recap
+We’re given a directed, weighted graph with V vertices and E edges.
+Each edge has the form [u, v, w] → from u → v with weight w.
+Task:
+1-Find shortest distances from src to every other vertex.
+2-If unreachable, mark as 1e8.
+3-If a negative cycle exists, return [-1].
+
+----
+
+⚡ Bellman-Ford Algorithm – Steps
+1-Initialize distances:
+    -> dist[src] = 0, all others = 1e8.
+2-Relax edges repeatedly (V-1 times):
+    -> For each edge (u, v, w),
+       if dist[u] + w < dist[v] → update dist[v].
+    -> Why V-1? → Shortest path can have at most V-1 edges.
+3-Check for negative cycles:
+    ->Run relaxation one more time.
+    ->If any edge can still be relaxed → negative cycle exists → return [-1].
+
+
+vector<int> bellmanFord(int V, vector<vector<int>>& edges, int src) {
+    const int INF = 1e8;
+    vector<int> dist(V, INF);
+    dist[src] = 0;
+
+    // Step 1: Relax all edges (V - 1) times
+    for (int i = 0; i < V - 1; i++) {
+        for (auto e : edges) {
+            int u = e[0], v = e[1], w = e[2];
+            if (dist[u] != INF && dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+
+    // Step 2: Check for negative cycle
+    for (auto e : edges) {
+        int u = e[0], v = e[1], w = e[2];
+        if (dist[u] != INF && dist[u] + w < dist[v]) {
+            return {-1}; // negative cycle found
+        }
+    }
+
+    return dist;
+}
+
+----
+
+📊 Complexity
+
+Time: O(V * E) → because each relaxation runs over all edges, up to V-1 times.
+Space: O(V) → distance array.
