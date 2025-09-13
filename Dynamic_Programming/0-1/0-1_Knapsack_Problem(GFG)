@@ -1,0 +1,127 @@
+
+📦 2. 0/1 Knapsack Problem
+Problem Statement
+Example 1
+
+Input:
+
+W = 4  
+val = [1, 2, 3]  
+wt  = [4, 5, 1]  
+Given n items, each with a weight wt[i] and a value val[i], and a knapsack with capacity W, find the maximum value that can be put into the knapsack such that the total weight ≤ W.
+You can either include or exclude an item (0 or 1).
+Items are available in single quantity only.
+
+## Recursive (Brute Force)
+/* =====================================================
+   1. Recursive (Brute Force) - Exponential O(2^n)
+   Idea: For each item → either include or exclude.
+   ===================================================== */
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int knapSackRecursive(int W, vector<int>& wt, vector<int>& val, int n) {
+    if (n == 0 || W == 0) return 0;
+
+    // If current item weight > capacity → cannot include
+    if (wt[n-1] > W)
+        return knapSackRecursive(W, wt, val, n-1);
+
+    // Else take max of: include item vs exclude item
+    return max(val[n-1] + knapSackRecursive(W - wt[n-1], wt, val, n-1),
+               knapSackRecursive(W, wt, val, n-1));
+}
+
+
+## Memoization (Top-Down DP)
+
+/* =====================================================
+   2. Memoization (Top-Down DP) - O(n*W)
+   Idea: Store results of subproblems in dp[n][W].
+   ===================================================== */
+
+
+int knapSackMemoUtil(int W, vector<int>& wt, vector<int>& val, int n,
+                     vector<vector<int>>& dp) {
+    if (n == 0 || W == 0) return 0;
+    if (dp[n][W] != -1) return dp[n][W];
+
+    if (wt[n-1] > W)
+        return dp[n][W] = knapSackMemoUtil(W, wt, val, n-1, dp);
+
+    return dp[n][W] = max(val[n-1] + knapSackMemoUtil(W - wt[n-1], wt, val, n-1, dp),
+                          knapSackMemoUtil(W, wt, val, n-1, dp));
+}
+
+int knapSackMemo(int W, vector<int>& wt, vector<int>& val, int n) {
+    vector<vector<int>> dp(n+1, vector<int>(W+1, -1));
+    return knapSackMemoUtil(W, wt, val, n, dp);
+}
+
+## Tabulation (Bottom-Up DP)
+/* =====================================================
+   3. Tabulation (Bottom-Up DP) - O(n*W)
+   Idea: Build dp[i][w] iteratively.
+   ===================================================== */
+
+int knapSackTabulation(int W, vector<int>& wt, vector<int>& val, int n) {
+    vector<vector<int>> dp(n+1, vector<int>(W+1, 0));
+
+    for (int i = 1; i <= n; i++) {
+        for (int w = 1; w <= W; w++) {
+            if (wt[i-1] <= w)
+                dp[i][w] = max(val[i-1] + dp[i-1][w - wt[i-1]], dp[i-1][w]);
+            else
+                dp[i][w] = dp[i-1][w];
+        }
+    }
+    return dp[n][W];
+}
+
+
+## Space Optimization
+
+/* =====================================================
+   4. Space Optimized DP - O(n*W) time, O(W) space
+   Idea: Use only 1D dp[] since current row depends on previous row.
+   ===================================================== */
+
+int knapSackOptimized(int W, vector<int>& wt, vector<int>& val, int n) {
+    vector<int> dp(W+1, 0);
+
+    for (int i = 0; i < n; i++) {
+        for (int w = W; w >= wt[i]; w--) { // reverse loop to avoid overwrite
+            dp[w] = max(dp[w], val[i] + dp[w - wt[i]]);
+        }
+    }
+    return dp[W];
+}
+
+
+/* =====================================================
+   Main Function for Testing
+   ===================================================== */
+int main() {
+    int W = 5;
+    vector<int> val = {10, 40, 30, 50};
+    vector<int> wt  = {5, 4, 2, 3};
+    int n = val.size();
+
+    cout << "Recursive:       " << knapSackRecursive(W, wt, val, n) << endl;
+    cout << "Memoization:     " << knapSackMemo(W, wt, val, n) << endl;
+    cout << "Tabulation:      " << knapSackTabulation(W, wt, val, n) << endl;
+    cout << "Space Optimized: " << knapSackOptimized(W, wt, val, n) << endl;
+
+    return 0;
+}
+
+
+## Complexity Comparison
+Approach:	{Time,	Space	Notes}
+Recursive:	{O(2^n),	O(n)}	
+Memoization: {O(n*W), O(n*W)}
+Tabulation: {O(n*W),	O(n*W)}
+Space Optimized: 	{O(n*W), O(W)}
+
+
