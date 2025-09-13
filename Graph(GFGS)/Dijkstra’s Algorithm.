@@ -1,0 +1,114 @@
+🔝 Dijkstra’s Algorithm (Brute Force → Optimized)
+Problem Recap
+
+We’re given an undirected, weighted graph (no negative weights).
+Task: Find the shortest distance from a given source src to all vertices.
+
+1️⃣ Brute Force (O(V²))
+Keep an array dist[] initialized to ∞, except dist[src] = 0.
+Repeatedly pick the unvisited node with minimum dist[] (linear scan).
+Relax all its neighbors.
+
+vector<int> dijkstraBrute(int V, vector<vector<int>>& edges, int src) {
+    vector<vector<pair<int,int>>> adj(V);
+    for (auto e : edges) {
+        adj[e[0]].push_back({e[1], e[2]});
+        adj[e[1]].push_back({e[0], e[2]}); // undirected
+    }
+
+    vector<int> dist(V, 1e9);
+    vector<bool> vis(V, false);
+    dist[src] = 0;
+
+    for (int i = 0; i < V - 1; i++) {
+        int u = -1;
+        for (int j = 0; j < V; j++) {
+            if (!vis[j] && (u == -1 || dist[j] < dist[u]))
+                u = j;
+        }
+        vis[u] = true;
+
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+            }
+        }
+    }
+    return dist;
+}
+
+
+----
+2️⃣ Optimized with Min-Heap (Priority Queue)
+Instead of linear scan for min, use a min-heap (priority queue).
+Always pick the node with the smallest distance.
+Relax neighbors and push updated distances back to heap.
+
+vector<int> dijkstraPQ(int V, vector<vector<int>>& edges, int src) {
+    vector<vector<pair<int,int>>> adj(V);
+    for (auto e : edges) {
+        adj[e[0]].push_back({e[1], e[2]});
+        adj[e[1]].push_back({e[0], e[2]});
+    }
+
+    vector<int> dist(V, 1e9);
+    dist[src] = 0;
+
+    priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq;
+    pq.push({0, src}); // {dist, node}
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top(); pq.pop();
+        if (d > dist[u]) continue; // Skip stale entry
+
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+
+----
+3️⃣ Optimized with Set (Alternative)
+
+Instead of priority_queue (which allows duplicates), we can use set to always keep the current best distance for each node.
+vector<int> dijkstraSet(int V, vector<vector<int>>& edges, int src) {
+    vector<vector<pair<int,int>>> adj(V);
+    for (auto e : edges) {
+        adj[e[0]].push_back({e[1], e[2]});
+        adj[e[1]].push_back({e[0], e[2]});
+    }
+
+    vector<int> dist(V, 1e9);
+    dist[src] = 0;
+
+    set<pair<int,int>> st; // {dist, node}
+    st.insert({0, src});
+
+    while (!st.empty()) {
+        auto [d, u] = *st.begin();
+        st.erase(st.begin());
+
+        for (auto [v, w] : adj[u]) {
+            if (dist[u] + w < dist[v]) {
+                st.erase({dist[v], v}); // remove old entry if exists
+                dist[v] = dist[u] + w;
+                st.insert({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+----
+
+## Comparison 
+## Approach:	{Time Complexity,	Space}
+1-Brute Force (Array Scan):	{O(V² + E),	O(V)}
+2-Priority Queue (PQ):	{O((V + E) log V), O(V + E)}
+3-Set-based:	{O((V + E) log V)	, O(V + E)}
+
