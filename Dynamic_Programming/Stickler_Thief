@@ -1,0 +1,117 @@
+🏠 Stickler Thief Problem
+Problem Statement
+Stickler the thief wants to loot money from houses arranged in a line.
+arr[i] represents the amount of money in the i-th house.
+Constraint: He cannot loot two consecutive houses.
+Goal: Maximize the total amount of money looted.
+
+# Examples
+Example 1
+Input:
+arr = [6, 5, 5, 7, 4]
+
+Output: 15
+Explanation: Loot houses 1, 3, and 5 → 6 + 5 + 4 = 15
+
+# Constraints
+1 ≤ arr.size() ≤ 10^5
+1 ≤ arr[i] ≤ 10^4
+
+----
+1️⃣ Recursive (Brute Force)
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int maxLootRecursive(vector<int>& arr, int i) {
+    if (i < 0) return 0;   // No houses left
+    if (i == 0) return arr[0];
+
+    // Choice: loot current house or skip it
+    int lootCurrent = arr[i] + maxLootRecursive(arr, i-2);
+    int skipCurrent  = maxLootRecursive(arr, i-1);
+
+    return max(lootCurrent, skipCurrent);
+}
+
+int main() {
+    vector<int> arr = {6, 5, 5, 7, 4};
+    int n = arr.size();
+    cout << "Max Loot (Recursive) = " << maxLootRecursive(arr, n-1) << endl;
+    return 0;
+}
+
+----
+2️⃣ Memoization (Top-Down DP)
+int maxLootMemoUtil(vector<int>& arr, int i, vector<int>& dp) {
+    if (i < 0) return 0;
+    if (i == 0) return arr[0];
+    if (dp[i] != -1) return dp[i];
+
+    int lootCurrent = arr[i] + maxLootMemoUtil(arr, i-2, dp);
+    int skipCurrent = maxLootMemoUtil(arr, i-1, dp);
+
+    return dp[i] = max(lootCurrent, skipCurrent);
+}
+
+int maxLootMemo(vector<int>& arr) {
+    int n = arr.size();
+    vector<int> dp(n, -1);
+    return maxLootMemoUtil(arr, n-1, dp);
+}
+
+----
+3️⃣ Tabulation (Bottom-Up DP)
+int maxLootTabulation(vector<int>& arr) {
+    int n = arr.size();
+    if (n == 0) return 0;
+    if (n == 1) return arr[0];
+
+    vector<int> dp(n);
+    dp[0] = arr[0];
+    dp[1] = max(arr[0], arr[1]);
+
+    for (int i = 2; i < n; i++) {
+        dp[i] = max(arr[i] + dp[i-2], dp[i-1]);
+    }
+
+    return dp[n-1];
+}
+
+-----
+4️⃣ Space Optimized
+
+int maxLootOptimized(vector<int>& arr) {
+    int n = arr.size();
+    if (n == 0) return 0;
+    if (n == 1) return arr[0];
+
+    int prev2 = arr[0];
+    int prev1 = max(arr[0], arr[1]);
+    int curr;
+
+    for (int i = 2; i < n; i++) {
+        curr = max(arr[i] + prev2, prev1);
+        prev2 = prev1;
+        prev1 = curr;
+    }
+
+    return prev1;
+}
+
+int main() {
+    vector<int> arr = {6, 5, 5, 7, 4};
+    cout << "Max Loot (Space Optimized) = " << maxLootOptimized(arr) << endl;
+    return 0;
+}
+
+----
+## ✅ Complexity Comparison
+
+Approach: {Time Complexity,	Space Complexity}
+Recursive:	{O(2^n), O(n)}
+Memoization:	{O(n), O(n)}
+Tabulation:	{O(n), O(n)}
+Space Optimized:	{O(n), O(1)}
+
+
