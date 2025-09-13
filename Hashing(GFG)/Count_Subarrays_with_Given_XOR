@@ -1,0 +1,123 @@
+# Count Subarrays with Given XOR ⚡
+
+## Problem Statement
+Given an array of integers `arr[]` and a number `k`, count the number of subarrays having XOR of their elements equal to `k`.
+
+---
+
+## Examples
+
+### Example 1
+**Input:**  
+`arr = [4, 2, 2, 6, 4], k = 6`  
+**Output:**  
+`4`  
+**Explanation:** Subarrays = `[4,2]`, `[2,2,6]`, `[6]`, `[4,2,2,6,4]`.
+
+---
+
+### Example 2
+**Input:**  
+`arr = [5, 6, 7, 8, 9], k = 5`  
+**Output:**  
+`2`  
+**Explanation:** Subarrays = `[5]`, `[5,6,7,8,9]`.
+
+---
+
+### Example 3
+**Input:**  
+`arr = [1, 1, 1, 1], k = 0`  
+**Output:**  
+`4`  
+**Explanation:** Subarrays = `[1,1]`, `[1,1]`, `[1,1]`, `[1,1,1,1]`.
+
+---
+
+## Constraints
+- `1 ≤ n ≤ 10^5`
+- `0 ≤ arr[i] ≤ 10^5`
+- `0 ≤ k ≤ 10^5`
+
+---
+
+## Approaches 🚀
+
+### 1. Brute Force
+- Generate all subarrays and compute XOR for each.
+- **Time Complexity:** `O(n^2)`  
+- **Space Complexity:** `O(1)`  
+- ❌ Not feasible for `n = 10^5`.
+
+---
+
+### 2. Optimized (Prefix XOR + Hashing)
+- Use prefix XORs and a hash map to count required pairs.
+- For each index:
+  - Compute `currXOR ^= arr[i]`
+  - If `currXOR == k`, increment result
+  - Add `freq[currXOR ^ k]` to result
+  - Increment `freq[currXOR]`
+- **Time Complexity:** `O(n)`  
+- **Space Complexity:** `O(n)`  
+
+---
+
+# ⚡ brute_force.cpp
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Brute Force: O(n^2)
+int countSubarraysBrute(vector<int>& arr, int k) {
+    int n = arr.size();
+    int count = 0;
+
+    for (int i = 0; i < n; i++) {
+        int currXOR = 0;
+        for (int j = i; j < n; j++) {
+            currXOR ^= arr[j];
+            if (currXOR == k) count++;
+        }
+    }
+    return count;
+}
+----
+
+## ⚡optimized Code
+
+int countSubarraysWithXOR(vector<int>& arr, int k) {
+    unordered_map<int,int> freq;
+    int count = 0, currXOR = 0;
+
+    for (int num : arr) {
+        currXOR ^= num;
+
+        if (currXOR == k) count++;
+
+        if (freq.find(currXOR ^ k) != freq.end()) {
+            count += freq[currXOR ^ k];
+        }
+
+        freq[currXOR]++;
+    }
+    return count;
+}
+
+
+int main() {
+    vector<int> arr = {4, 2, 2, 6, 4};
+    int k = 6;
+    cout << "Brute Force Count = " << countSubarraysBrute(arr, k) << endl;
+    return 0;
+}
+
+
+
+## 📊 Approach Comparison
+
+ Approach: {Time Complexity , Space Complexity}
+ Brute Force: {O(n^2),  O(1)}
+ Optimized (Hashing): {O(n) ,O(n)}
+
