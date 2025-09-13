@@ -1,0 +1,187 @@
+## Undirected Graph Cycle Detection
+🔹 Problem Brief
+We are given an undirected graph with V vertices and E edges. The graph may consist of multiple disconnected components.
+We need to determine whether any cycle exists in the graph.
+
+----
+Example 1:
+V = 4, E = 4
+Edges = [[0, 1], [0, 2], [1, 2], [2, 3]]
+
+Graph:
+  0
+ / \
+1---2
+    |
+    3
+
+Cycle found: 0 → 1 → 2 → 0
+Output: true
+
+----
+
+## Constraints
+
+1 ≤ V ≤ 10^5
+1 ≤ E ≤ 10^5
+Graph can be disconnected → must check all components.
+
+## 1️⃣ Brute Force Approach (DFS with Path Recording)
+Check all paths, if a back edge is found → cycle exists.
+
+#include <bits/stdc++.h>
+using namespace std;
+
+bool dfsBrute(int node, int parent, vector<int> adj[], vector<int>& visited) {
+    visited[node] = 1;
+    for (int neigh : adj[node]) {
+        if (!visited[neigh]) {
+            if (dfsBrute(neigh, node, adj, visited)) return true;
+        } else if (neigh != parent) {
+            return true; // back edge → cycle
+        }
+    }
+    return false;
+}
+
+bool isCycleBrute(int V, vector<vector<int>>& edges) {
+    vector<int> adj[V];
+    for (auto e : edges) {
+        adj[e[0]].push_back(e[1]);
+        adj[e[1]].push_back(e[0]);
+    }
+
+    vector<int> visited(V, 0);
+    for (int i = 0; i < V; i++) {
+        if (!visited[i] && dfsBrute(i, -1, adj, visited)) 
+            return true;
+    }
+    return false;
+}
+
+
+----
+
+2️⃣ DFS (Optimized with Parent Tracking)
+Uses DFS and keeps track of parent to detect back edges efficiently.
+
+bool dfsCycle(int node, int parent, vector<int> adj[], vector<int>& visited) {
+    visited[node] = 1;
+    for (int neigh : adj[node]) {
+        if (!visited[neigh]) {
+            if (dfsCycle(neigh, node, adj, visited)) return true;
+        } else if (neigh != parent) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool isCycleDFS(int V, vector<vector<int>>& edges) {
+    vector<int> adj[V];
+    for (auto e : edges) {
+        adj[e[0]].push_back(e[1]);
+        adj[e[1]].push_back(e[0]);
+    }
+
+    vector<int> visited(V, 0);
+    for (int i = 0; i < V; i++) {
+        if (!visited[i] && dfsCycle(i, -1, adj, visited)) 
+            return true;
+    }
+    return false;
+}
+
+----
+
+3️⃣ BFS (Parent Tracking)
+Instead of recursion, use BFS + parent check.
+
+bool isCycleBFS(int V, vector<vector<int>>& edges) {
+    vector<int> adj[V];
+    for (auto e : edges) {
+        adj[e[0]].push_back(e[1]);
+        adj[e[1]].push_back(e[0]);
+    }
+
+    vector<int> visited(V, 0);
+    for (int i = 0; i < V; i++) {
+        if (!visited[i]) {
+            queue<pair<int,int>> q;
+            q.push({i, -1});
+            visited[i] = 1;
+
+            while (!q.empty()) {
+                int node = q.front().first;
+                int parent = q.front().second;
+                q.pop();
+
+                for (int neigh : adj[node]) {
+                    if (!visited[neigh]) {
+                        visited[neigh] = 1;
+                        q.push({neigh, node});
+                    } else if (neigh != parent) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+----
+
+4️⃣ Union-Find / Disjoint Set (Most Optimized)
+Detect cycle while building graph.
+struct DSU {
+    vector<int> parent, rank;
+    DSU(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        iota(parent.begin(), parent.end(), 0);
+    }
+    int find(int x) {
+        if (x == parent[x]) return x;
+        return parent[x] = find(parent[x]); // path compression
+    }
+    bool unite(int a, int b) {
+        a = find(a), b = find(b);
+        if (a == b) return false; // cycle found
+        if (rank[a] < rank[b]) swap(a, b);
+        parent[b] = a;
+        if (rank[a] == rank[b]) rank[a]++;
+        return true;
+    }
+};
+
+bool isCycleUnionFind(int V, vector<vector<int>>& edges) {
+    DSU dsu(V);
+    for (auto e : edges) {
+        if (!dsu.unite(e[0], e[1])) return true;
+    }
+    return false;
+}
+
+
+int main() {
+    int V = 4;
+    vector<vector<int>> edges = {{0,1}, {0,2}, {1,2}, {2,3}};
+
+    cout << "Brute Force (DFS): " << (isCycleBrute(V, edges) ? "Yes" : "No") << endl;
+    cout << "DFS Optimized: " << (isCycleDFS(V, edges) ? "Yes" : "No") << endl;
+    cout << "BFS Approach: " << (isCycleBFS(V, edges) ? "Yes" : "No") << endl;
+    cout << "Union-Find Optimized: " << (isCycleUnionFind(V, edges) ? "Yes" : "No") << endl;
+
+    return 0;
+}
+
+
+----
+
+## Comparison
+# Approach:	{Time Complexity,	Space Complexity}
+Brute Force DFS:	{O(V * E),	O(V)}
+DFS Optimized:	{O(V + E),	O(V)}
+BFS Optimized:	{O(V + E),	O(V)}
+Union-Find (DSU):	{O(E α(V)),	O(V)}	
