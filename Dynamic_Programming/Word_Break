@@ -1,0 +1,131 @@
+✏️ Word Break Problem
+Problem Statement
+Given:
+A string s
+A list of words dictionary[]
+Task: Determine whether s can be formed by concatenating one or more words from dictionary[].
+Each word from the dictionary can be used any number of times.
+Words can be concatenated in any order.
+
+Examples
+Example 1
+Input:
+
+s = "ilike"  
+dictionary = ["i", "like", "gfg"]
+Output: true
+
+
+Constraints
+
+1 ≤ s.size() ≤ 3000
+1 ≤ dictionary.size() ≤ 1000
+1 ≤ dictionary[i].size() ≤ 100
+
+----
+
+1️⃣ Recursive (Brute Force)
+Recursive (Brute Force): Try all possible prefixes recursively to see if the string can be segmented.
+
+#include <bits/stdc++.h>
+using namespace std;
+
+bool wordBreakRecursive(string s, vector<string>& dict) {
+    if (s.empty()) return true;
+
+    for (auto word : dict) {
+        if (s.substr(0, word.size()) == word) {
+            if (wordBreakRecursive(s.substr(word.size()), dict))
+                return true;
+        }
+    }
+    return false;
+}
+
+int main() {
+    string s = "ilike";
+    vector<string> dict = {"i", "like", "gfg"};
+    cout << boolalpha << wordBreakRecursive(s, dict) << endl;
+    return 0;
+}
+----
+
+2️⃣ Memoization (Top-Down DP)
+Memoization (Top-Down DP): Recursively check prefixes while storing results to avoid recomputation.
+
+bool wordBreakMemoUtil(string s, unordered_set<string>& dict, int start, vector<int>& dp) {
+    if (start == s.size()) return true;
+    if (dp[start] != -1) return dp[start];
+
+    for (int end = start + 1; end <= s.size(); end++) {
+        if (dict.count(s.substr(start, end - start)) &&
+            wordBreakMemoUtil(s, dict, end, dp)) {
+            return dp[start] = 1;
+        }
+    }
+    return dp[start] = 0;
+}
+
+bool wordBreakMemo(string s, vector<string>& dict) {
+    unordered_set<string> st(dict.begin(), dict.end());
+    vector<int> dp(s.size(), -1);
+    return wordBreakMemoUtil(s, st, 0, dp);
+}
+
+----
+
+3️⃣ Tabulation (Bottom-Up DP)
+Tabulation (Bottom-Up DP): Iteratively build a DP array to track if substrings can be formed.
+
+
+bool wordBreakTabulation(string s, vector<string>& dict) {
+    int n = s.size();
+    unordered_set<string> st(dict.begin(), dict.end());
+    vector<bool> dp(n+1, false);
+    dp[0] = true; // empty string
+
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (dp[j] && st.count(s.substr(j, i-j))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    return dp[n];
+}
+
+----
+
+4️⃣ Optimized DP (Using Max Word Length)
+Optimized DP: Limit checks to maximum word length and use a DP array for faster segmentation.
+
+bool wordBreakOptimized(string s, vector<string>& dict) {
+    int n = s.size();
+    unordered_set<string> st(dict.begin(), dict.end());
+    int maxLen = 0;
+    for (auto &w : dict) maxLen = max(maxLen, (int)w.size());
+
+    vector<bool> dp(n+1, false);
+    dp[0] = true;
+
+    for (int i = 1; i <= n; i++) {
+        for (int l = 1; l <= maxLen && l <= i; l++) {
+            if (dp[i-l] && st.count(s.substr(i-l, l))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    return dp[n];
+}
+
+----
+
+## Complexity Comparison
+Approach:	{Time Complexity, Space Complexity}
+Recursive:	{Exponential,	O(n)}
+Memoization:	{O(n²),	O(n)}
+Tabulation:	{O(n²),	O(n)}
+Optimized DP:	{O(n * maxWordLength), O(n)}
+
