@@ -1,0 +1,112 @@
+# Longest Consecutive Subsequence 🔗
+
+## Problem Statement
+Given an array `arr[]` of non-negative integers, find the length of the **longest subsequence** such that elements are consecutive integers.  
+⚡ The consecutive numbers can appear **in any order**.
+
+---
+
+## Examples
+### Example 1:
+Input:  
+`arr = [2, 6, 1, 9, 4, 5, 3]`  
+Output:  
+`6`  
+Explanation: `1, 2, 3, 4, 5, 6`
+
+### Example 2:
+Input:  
+`arr = [1, 9, 3, 10, 4, 20, 2]`  
+Output:  
+`4`  
+Explanation: `1, 2, 3, 4`
+
+---
+
+## Constraints
+- `1 ≤ n ≤ 10^5`
+- `0 ≤ arr[i] ≤ 10^5`
+
+---
+
+## Approaches 🚀
+
+### 1. Brute Force (Sorting)
+- Sort the array.
+- Iterate and count streaks of consecutive numbers.
+- **Time Complexity:** `O(n log n)`  
+- **Space Complexity:** `O(1)`
+
+---
+
+### 2. Optimized (Hashing / Set)
+- Insert all elements into a hash set.
+- For each number, only start counting if it's the **start of a sequence** (`num-1` not present).
+- Count forward until the streak breaks.
+- **Time Complexity:** `O(n)` average  
+- **Space Complexity:** `O(n)`
+
+---
+
+## Dry Run 📝
+For `arr = [1, 9, 3, 10, 4, 20, 2]`  
+- Hash Set = {1,2,3,4,9,10,20}  
+- Start at 1 → count = 4 (`1,2,3,4`)  
+- Start at 9 → count = 2 (`9,10`)  
+- Start at 20 → count = 1  
+✅ Answer = 4
+
+---
+
+## Usage
+Compile and run either approach:
+
+```bash
+g++ brute_force.cpp -o brute
+./brute
+
+g++ optimized_hashing.cpp -o optimized
+./optimize
+---
+
+# ⚡ Optimized Solution (C++)
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+// Function to find longest consecutive subsequence
+int longestConsecutive(vector<int>& arr) {
+    unordered_set<int> s(arr.begin(), arr.end());
+    int longest = 0;
+
+    for (int num : arr) {
+        // Only start when it's the beginning of a sequence
+        if (s.find(num - 1) == s.end()) {
+            int curr = num;
+            int streak = 1;
+
+            while (s.find(curr + 1) != s.end()) {
+                curr++;
+                streak++;
+            }
+            longest = max(longest, streak);
+        }
+    }
+    return longest;
+}
+
+int main() {
+    vector<int> arr = {2, 6, 1, 9, 4, 5, 3};
+    cout << "Longest Consecutive Subsequence Length = "
+         << longestConsecutive(arr) << endl;
+    return 0;
+}
+
+----
+
+## Comparison
+📊 Approach Comparison
+Approach:	{Time Complexity,	Space Complexity}
+Brute Force:	{O(n log n),	O(1)}
+Optimized (Hashing / Set):{O(n) ,	O(n)}
