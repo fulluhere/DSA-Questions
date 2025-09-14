@@ -1,0 +1,178 @@
+📌 Diameter of a Binary Tree
+A deep dive into solving the "Diameter of a Binary Tree" problem, showcasing a clear thought process from a brute-force to an optimized O(n) solution. This project is intended to demonstrate strong data structure fundamentals and algorithmic thinking.
+
+Problem Statement
+The diameter of a binary tree is the length of the longest path between any two nodes in the tree. The length is measured by the number of edges. This path may or may not pass through the root.
+[https://www.geeksforgeeks.org/batch/gfg-160-problems/track/tree-gfg-160/problem/diameter-of-binary-tree](url)
+
+Core Intuition
+The longest path in a tree must pass through some node. For any given node, the longest path that uses it as the "highest point" or "bridge" is the sum of the heights of its left and right subtrees.
+Longest Path through node = height(node->left) + height(node->right)
+
+The tree's overall diameter will be the maximum of these path lengths calculated for every single node.
+
+----
+
+🔴 Approach 1: Brute Force — O(n²)
+The most intuitive approach is to directly translate our core idea into code. For every node, we calculate the diameter that passes through it and find the maximum overall.
+
+Thought Process & Algorithm
+For any node root, the diameter of the tree rooted at root is the maximum of:
+1. The diameter of the left subtree.
+2. The diameter of the right subtree.
+3. The longest path passing through root (height(root->left) + height(root->right)).
+
+We can write a recursive function that calculates these three values and returns the maximum.
+
+## C++ Implementation
+
+
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// Calculates the height of a tree.
+int height(Node* root) {
+    if (root == nullptr) return 0;
+    return 1 + max(height(root->left), height(root->right));
+}
+
+// Brute-force function to find the diameter.
+int diameter(Node* root) {
+    if (root == nullptr) return 0;
+
+    // Calculate the height of the left and right subtrees.
+    int leftHeight = height(root->left);
+    int rightHeight = height(root->right);
+
+    // Recursively find the diameter in the left and right subtrees.
+    int leftDiameter = diameter(root->left);
+    int rightDiameter = diameter(root->right);
+
+    // The result is the maximum of the three possibilities.
+    int diameterThroughRoot = leftHeight + rightHeight;
+    return max(diameterThroughRoot, max(leftDiameter, rightDiameter));
+}
+
+
+
+## Complexity Analysis
+ -> Time Complexity: O(n²)
+  The diameter function is called for each of the n nodes. Inside each call, we invoke height(),
+  which traverses the subtree and can take up to O(n) time in the worst case (a skewed tree). 
+  This leads to a complexity of O(n * n) = O(n²).
+
+Space Complexity: O(h)
+The space is determined by the maximum depth of the recursion stack, which is the height h of the tree.
+
+
+----
+
+🟢 Approach 2: Optimized with Post-Order Traversal — O(n)
+Identifying the Bottleneck
+The brute-force approach is slow because we repeatedly calculate the heights of the same nodes. 
+The height() function traverses nodes that the main diameter() function also traverses.
+
+The Optimization Insight
+The key insight is that the height of a node is calculated after visiting its children 
+(a post-order traversal). We can leverage this same traversal to calculate the diameter
+"on the way up" the recursion stack.
+
+By modifying the height function, we can make it do two jobs in a single pass:
+ -> Return the height of the current subtree.
+ ->Update the diameter of the overall tree if the path through the current node is the
+  longest seen so far.
+
+## C++ Implementation
+
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// This function returns the height of the tree and updates the diameter
+// variable (passed by reference) in a single pass.
+int calculateHeightAndUpdateDiameter(Node* root, int &diameter) {
+    if (root == nullptr) return 0;
+
+    // Recursively find the height of the left and right subtrees.
+    int leftHeight = calculateHeightAndUpdateDiameter(root->left, diameter);
+    int rightHeight = calculateHeightAndUpdateDiameter(root->right, diameter);
+
+    // The potential diameter through the current node is leftHeight + rightHeight.
+    // Update the max diameter found so far.
+    diameter = max(diameter, leftHeight + rightHeight);
+
+    // Return the height of the tree rooted at the current node for the parent calls.
+    return 1 + max(leftHeight, rightHeight);
+}
+
+int diameterOptimized(Node* root) {
+    int dia = 0;
+    calculateHeightAndUpdateDiameter(root, dia);
+    return dia;
+}
+
+## Complexity Analysis
+ -> Time Complexity: O(n)
+    We visit each node exactly once in a single Depth-First Search (DFS). 
+    All calculations are done in constant time per node.
+
+ -> Space Complexity: O(h)
+  The space complexity remains O(h) for the recursion stack, where h is the
+  height of the tree. In the worst case of a skewed tree, this can be O(n).
+
+## Comparison
+Approach: {Time Complexity, Space Complexity}
+Brute Force: {O(n²), O(h)}
+Optimized Post-Order DFS:{O(n), O(h)}
+
+The optimal solution. Combines two calculations into one pass.
+
+
+----
+
+✅ Testing & Edge Cases
+To ensure robustness, the solution should be tested against:
+
+Empty Tree: root = nullptr -> Diameter should be 0.
+
+Single Node Tree: -> Diameter should be 0.
+
+Skewed Tree (like a linked list): -> Diameter will be n-1.
+
+Complete/Full Binary Tree: The diameter will pass through the root.
+
+----
+🚀 How to Run the Code
+Save either implementation as diameter.cpp.
+
+Include a main function to construct a sample tree.
+
+int main() {
+    Node* root = new Node(1);
+    root->left = new Node(2);
+    root->right = new Node(3);
+    root->left->left = new Node(4);
+    root->left->right = new Node(5);
+
+    // For Optimized Solution:
+    cout << "Diameter (Optimized): " << diameterOptimized(root) << endl;
+    // Expected Output: Diameter (Optimized): 3
+
+    return 0;
+}
+
