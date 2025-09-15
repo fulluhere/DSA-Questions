@@ -1,0 +1,159 @@
+## Tree Boundary Traversal of a Binary Tree
+
+
+🌳 Problem: Boundary Traversal of a Binary Tree
+Q: What is Boundary Traversal?
+A: We print nodes in an anticlockwise manner starting from the root:
+     1. Left Boundary (excluding leaves)
+     2. Leaf Nodes (left to right)
+     3. Right Boundary (excluding leaves, printed in reverse order)
+
+📝 Example 1
+
+Input: root[] = [1, 2, 3, 4, 5, 6, 7, N, N, 8, 9, N, N, N, N]
+Output: [1, 2, 4, 8, 9, 6, 7, 3]
+
+📝 Example 2
+
+Input: root[] = [1, N, 2, N, 3, N, 4, N, N]
+Output: [1, 4, 3, 2]
+
+----
+
+
+🪓 Approach 1: Brute Force (Collect Separately)
+Idea:
+-> Collect all left boundary nodes by going left until leaves.
+-> Collect all leaves by doing full traversal.
+-> Collect all right boundary nodes by going right until leaves, then reverse them.
+-> Concatenate.
+
+⚠️ Works fine but involves multiple traversals of the tree.
+
+-- Code --
+
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int val) : data(val), left(NULL), right(NULL) {}
+};
+
+bool isLeaf(Node* node) {
+    return node && !node->left && !node->right;
+}
+
+// Brute force: Traverse all nodes and check their role
+void dfs(Node* root, vector<int>& left, vector<int>& leaves, vector<int>& right, bool isLeftBoundary, bool isRightBoundary) {
+    if (!root) return;
+
+    if (isLeaf(root)) {
+        leaves.push_back(root->data);
+        return;
+    }
+    if (isLeftBoundary) left.push_back(root->data);
+    if (isRightBoundary) right.push_back(root->data);
+
+    dfs(root->left, left, leaves, right, isLeftBoundary, isRightBoundary && !root->right);
+    dfs(root->right, left, leaves, right, isLeftBoundary && !root->left, isRightBoundary);
+}
+
+vector<int> boundaryTraversal(Node* root) {
+    if (!root) return {};
+    if (isLeaf(root)) return {root->data};
+
+    vector<int> left, leaves, right;
+    left.push_back(root->data);
+
+    dfs(root->left, left, leaves, right, true, false);
+    dfs(root->right, left, leaves, right, false, true);
+
+    vector<int> result = left;
+    result.insert(result.end(), leaves.begin(), leaves.end());
+    reverse(right.begin(), right.end());
+    result.insert(result.end(), right.begin(), right.end());
+
+    return result;
+}
+
+----
+
+🔹 Approach 2: Optimized
+
+👉 Break down into three helper traversals:
+ 1. Add Left boundary (excluding leaves)
+ 2. Add Leaf nodes
+ 3. Add Right boundary (excluding leaves, reversed)
+This avoids redundant checks.
+
+C++ Optimized Code
+
+
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+    int data;
+    Node* left;
+    Node* right;
+    Node(int val) : data(val), left(NULL), right(NULL) {}
+};
+
+bool isLeaf(Node* node) {
+    return node && !node->left && !node->right;
+}
+
+void addLeftBoundary(Node* root, vector<int>& res) {
+    Node* cur = root->left;
+    while (cur) {
+        if (!isLeaf(cur)) res.push_back(cur->data);
+        cur = cur->left ? cur->left : cur->right;
+    }
+}
+
+void addLeaves(Node* root, vector<int>& res) {
+    if (!root) return;
+    if (isLeaf(root)) {
+        res.push_back(root->data);
+        return;
+    }
+    addLeaves(root->left, res);
+    addLeaves(root->right, res);
+}
+
+void addRightBoundary(Node* root, vector<int>& res) {
+    Node* cur = root->right;
+    vector<int> tmp;
+    while (cur) {
+        if (!isLeaf(cur)) tmp.push_back(cur->data);
+        cur = cur->right ? cur->right : cur->left;
+    }
+    reverse(tmp.begin(), tmp.end());
+    res.insert(res.end(), tmp.begin(), tmp.end());
+}
+
+vector<int> boundaryTraversal(Node* root) {
+    vector<int> res;
+    if (!root) return res;
+    if (!isLeaf(root)) res.push_back(root->data);
+
+    addLeftBoundary(root, res);
+    addLeaves(root, res);
+    addRightBoundary(root, res);
+
+    return res;
+}
+
+----
+
+🔹 Complexity Comparison
+-> Approach:	{Time Complexity,	Space Complexity,	Notes}
+-> Brute Force:	{O(N²) (extra checks for boundary roles),	O(N)	Multiple traversals, repeated checks}
+-> Optimized:	{O(N) (single pass),	O(H) (recursion stack, H = tree height)	Efficient, standard solution}
+
+
+
+
