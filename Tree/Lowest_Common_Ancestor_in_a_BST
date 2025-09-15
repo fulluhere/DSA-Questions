@@ -1,0 +1,152 @@
+## Lowest Common Ancestor (LCA) in a Binary Search Tree
+This document provides a detailed explanation, C++ code, and complexity analysis for finding the Lowest Common Ancestor (LCA)
+of two given nodes, n1 and n2, in a Binary Search Tree (BST).
+
+## Examples
+Input: root = [5, 4, 6, 3, N, N, 7, N, N, N, 8], n1 = 7, n2 = 8       
+Output: 7
+
+Explanation: 7 is the closest node to both 7 and 8, which is also an ancestor of both the nodes.
+
+
+🪓 Approach 1: Brute Force (General Binary Tree Method)
+This approach finds the LCA by storing the root-to-node paths for n1 and n2 and then comparing them. This method does not use 
+the properties of a BST and works for any binary tree.
+
+Idea:
+1- Find and store the path from the root to n1.
+2- Find and store the path from the root to n2.
+3- Traverse both paths simultaneously until a mismatch is found. The node just before the mismatch is the LCA.
+
+-- Code --
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Tree Node
+struct Node {
+    int data;
+    Node *left, *right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+// Utility to find path from root to a given node
+bool findPath(Node* root, int n, vector<Node*>& path) {
+    if (!root) return false;
+    path.push_back(root);
+    if (root->data == n) return true;
+    if ((root->left && findPath(root->left, n, path)) || 
+        (root->right && findPath(root->right, n, path))) {
+        return true;
+    }
+    path.pop_back(); // Backtrack if node not in subtree
+    return false;
+}
+
+// Brute-force LCA for any binary tree
+Node* LCA_Brute(Node* root, int n1, int n2) {
+    vector<Node*> path1, path2;
+    if (!findPath(root, n1, path1) || !findPath(root, n2, path2)) {
+        return nullptr;
+    }
+    Node* lca = nullptr;
+    for (int i = 0; i < path1.size() && i < path2.size(); ++i) {
+        if (path1[i] == path2[i]) {
+            lca = path1[i];
+        } else {
+            break;
+        }
+    }
+    return lca;
+}
+
+----
+
+
+⚡ Approach 2: Optimized (Leveraging BST Property)
+This approach takes advantage of the core property of a BST: left_child < root < right_child. This allows us to discard half of the tree at each step.
+
+Idea:
+Start from the root and compare its value with n1 and n2.
+
+If both n1 and n2 are smaller than the current node, the LCA must be in the left subtree.
+
+If both n1 and n2 are larger than the current node, the LCA must be in the right subtree.
+
+If the current node is between n1 and n2 (or is equal to one of them), then the current node is the "split point" and is therefore the LCA.
+
+-- Code (Recursive) --
+
+C++
+
+Node* LCA_Optimized_Recursive(Node* root, int n1, int n2) {
+    if (!root) return nullptr;
+
+    // If both nodes are smaller, LCA is in the left subtree
+    if (root->data > n1 && root->data > n2)
+        return LCA_Optimized_Recursive(root->left, n1, n2);
+
+    // If both nodes are larger, LCA is in the right subtree
+    if (root->data < n1 && root->data < n2)
+        return LCA_Optimized_Recursive(root->right, n1, n2);
+
+    // Otherwise, this node is the split point (LCA)
+    return root;
+}
+
+
+-- Code (Iterative) --
+The iterative version is even better as it uses constant extra space.
+
+
+Node* LCA_Optimized_Iterative(Node* root, int n1, int n2) {
+    while (root != nullptr) {
+        // If both nodes are smaller, go left
+        if (root->data > n1 && root->data > n2) {
+            root = root->left;
+        }
+        // If both nodes are larger, go right
+        else if (root->data < n1 && root->data < n2) {
+            root = root->right;
+        }
+        // Otherwise, we've found the split point
+        else {
+            break;
+        }
+    }
+    return root;
+}
+
+----
+
+📊 Complexity Analysis
+Approach:	{Brute Force (Path Storage),	Optimized (BST Property)}
+Time Complexity:	{O(N) (Two traversals of the tree),	O(H), where H is the tree's height. Best/Avg: O(logN), Worst: O(N)}
+Space Complexity:	{O(N) (To store the paths),	Recursive: O(H), Iterative: O(1)}
+Key Insight	Works for any binary tree. Does not use BST properties.	Specialized for BSTs. Discards half the tree at each step.
+
+
+Example
+
+// A single main function to test all approaches
+int main() {
+    Node* root = new Node(20);
+    root->left = new Node(8);
+    root->right = new Node(22);
+    root->left->left = new Node(4);
+    root->left->right = new Node(12);
+    root->left->right->left = new Node(10);
+    root->left->right->right = new Node(14);
+
+    int n1 = 10, n2 = 14;
+
+    Node* lca1 = LCA_Brute(root, n1, n2);
+    cout << "LCA (Brute Force): " << lca1->data << endl; // Output: 12
+
+    Node* lca2 = LCA_Optimized_Recursive(root, n1, n2);
+    cout << "LCA (Optimized Recursive): " << lca2->data << endl; // Output: 12
+
+    Node* lca3 = LCA_Optimized_Iterative(root, n1, n2);
+    cout << "LCA (Optimized Iterative): " << lca3->data << endl; // Output: 12
+}
