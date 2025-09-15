@@ -1,0 +1,236 @@
+## Construct Binary Tree from Inorder & Preorder Traversal
+
+This document provides a detailed explanation, C++ code, and complexity analysis for solving the problem of
+building a binary tree from its given inorder and preorder traversal arrays.
+
+📝 Core Concept
+The entire algorithm is based on two fundamental properties of tree traversals:
+
+Preorder Traversal (Root, Left, Right): The very first element in a preorder traversal is always the root of
+the tree (or subtree).
+
+Inorder Traversal (Left, Root, Right): Once we identify the root, its position in the inorder traversal 
+separates all the elements into two groups: everything to the left of the root belongs to the left subtree, 
+and everything to the right belongs to the right subtree.
+
+By using these two properties recursively, we can accurately reconstruct the entire binary tree.
+
+----
+
+
+🏹 Approach 1: Brute-Force (Recursive Slicing)
+This approach directly applies the core concept using recursion. At each step, we identify the root, 
+find its position in the inorder array, and then create smaller sub-vectors for the left and right 
+children to build upon.
+
+## Explanation
+1- The first element of the preorder vector is the root of the current tree.
+2- Create a new Node with this root value.
+3- Search for the root's value in the inorder vector to find its index. Let's call it inorder_idx.
+4- All elements to the left of inorder_idx in the inorder vector form the left subtree.
+5- All elements to the right of inorder_idx form the right subtree.
+6- Create new sub-vectors from the inorder and preorder vectors for the left and right subtrees.
+7- Recursively call the function for the left subtree and assign the result to root->left.
+8- Recursively call the function for the right subtree and assign the result to root->right.
+9- The base case for the recursion is when an input vector is empty, in which case we return nullptr.
+
+##-- Code -- ##
+
+#include <iostream>
+#include <vector>
+#include <algorithm> // find
+#include <iterator>  // distance
+using namespace std;
+
+// Definition for a binary tree node.
+struct Node {
+    int data;
+    Node *left;
+    Node *right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+Node* buildTree(std::vector<int>& inorder, std::vector<int>& preorder) {
+    // Base case: if either vector is empty, there is no tree to build.
+    if (inorder.empty() || preorder.empty()) {
+        return nullptr;
+    }
+
+    // The first element of preorder is the root
+    int root_data = preorder[0];
+    Node* root = new Node(root_data);
+
+    // Find the root's index in the inorder traversal
+    // This is the O(N) step that makes this approach a brute-force
+    auto it = find(inorder.begin(), inorder.end(), root_data);
+    int inorder_idx = distance(inorder.begin(), it);
+    
+    // Create sub-vectors for left and right subtrees (expensive operation)
+    vector<int> left_inorder(inorder.begin(), inorder.begin() + inorder_idx);
+    vector<int> right_inorder(inorder.begin() + inorder_idx + 1, inorder.end());
+    
+    vector<int> left_preorder(preorder.begin() + 1, preorder.begin() + 1 + left_inorder.size());
+    vector<int> right_preorder(preorder.begin() + 1 + left_inorder.size(), preorder.end());
+
+    // Recursively build the left and right subtrees
+    root->left = buildTree(left_inorder, left_preorder);
+    root->right = buildTree(right_inorder, right_preorder);
+
+    return root;
+}
+
+// Helper function to get postorder traversal for verification
+void getPostorder(Node* root, std::vector<int>& result) {
+    if (root == nullptr) {
+        return;
+    }
+    getPostorder(root->left, result);
+    getPostorder(root->right, result);
+    result.push_back(root->data);
+}
+
+// Example Usage:
+int main() {
+    vector<int> inorder = {3, 1, 4, 0, 2, 5};
+    vector<int> preorder = {0, 1, 3, 4, 2, 5};
+    Node* root_node = buildTree(inorder, preorder);
+    
+    vector<int> postorder_result;
+    getPostorder(root_node, postorder_result);
+
+    cout << "Postorder Traversal: ";
+    for (int val : postorder_result) {
+        cout << val << " ";
+    }
+    cout << endl; // Output: 3 4 1 5 2 0 
+    return 0;
+}
+
+
+----
+
+## Complexity Analysis
+-> Time Complexity: O(N^2)
+In the worst case (a skewed tree), at each of the N calls, we perform a linear search (find) which takes O(N) time. 
+This results in a total time complexity of O(N^2).
+
+-> Space Complexity: O(N^2)
+The recursion stack can go up to O(N) deep in a skewed tree. At each level, we create new sub-vectors. The cumulative 
+space taken by these vectors across all recursive calls can be up to O(N^2) in the worst case.
+
+----
+
+🚀 Approach 2: Optimized (Using Pointers and a Hash Map)
+The brute-force approach is slow because of the repeated linear searches and vector creation. We can optimize this significantly.
+
+Explanation
+The key optimizations are:
+1- Eliminate the Search: Instead of searching the inorder vector every time, we pre-process it by storing the indices of each element 
+in a hash map (std::unordered_map in C++). This allows us to find the root's index in O(1) time.
+
+2- Eliminate Slicing: Instead of creating new sub-vectors, we use indices (left, right) to define the boundaries of the current inorder
+subarray we are considering.
+
+
+## -- Code -- ##
+
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+// Definition for a binary tree node.
+struct Node {
+    int data;
+    Node *left;
+    Node *right;
+    Node(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+class Solution {
+public:
+    Node* buildTree(vector<int>& inorder, vector<int>& preorder) {
+        // Create a map for O(1) lookup of inorder indices
+        for (int i = 0; i < inorder.size(); ++i) {
+            inorder_map[inorder[i]] = i;
+        }
+        
+        preorder_idx = 0;
+        // Call the recursive helper
+        return build(preorder, 0, inorder.size() - 1);
+    }
+
+private:
+    int preorder_idx;
+    unordered_map<int, int> inorder_map;
+
+    Node* build(vector<int>& preorder, int inorder_left, int inorder_right) {
+        // Base case: if the current subarray is empty
+        if (inorder_left > inorder_right) {
+            return nullptr;
+        }
+        
+        // Get the current root from preorder and advance the pointer
+        int root_data = preorder[preorder_idx++];
+        Node* root = new Node(root_data);
+        
+        // Get the inorder index of the root to find subtree boundaries
+        int inorder_idx = inorder_map[root_data];
+        
+        // Recursively build the left and right subtrees
+        root->left = build(preorder, inorder_left, inorder_idx - 1);
+        root->right = build(preorder, inorder_idx + 1, inorder_right);
+        
+        return root;
+    }
+};
+
+// Helper function for verification
+void getPostorder(Node* root, std::vector<int>& result) {
+    if (root == nullptr) {
+        return;
+    }
+    getPostorder(root->left, result);
+    getPostorder(root->right, result);
+    result.push_back(root->data);
+}
+
+// Example Usage:
+int main() {
+    vector<int> inorder = {3, 1, 4, 0, 2, 5};
+    vector<int> preorder = {0, 1, 3, 4, 2, 5};
+    Solution solver;
+    Node* root_node = solver.buildTree(inorder, preorder);
+    
+    vector<int> postorder_result;
+    getPostorder(root_node, postorder_result);
+
+    cout << "Postorder Traversal: ";
+    for (int val : postorder_result) {
+        cout << val << " ";
+    }
+    cout << endl; // Output: 3 4 1 5 2 0
+    return 0;
+}
+
+----
+ Complexity 
+
+-> Time Complexity: O(N)
+Building the hash map takes O(N) time. The recursive function visits each node exactly once, and each operation inside 
+(map lookup, creating a node) is O(1). Therefore, the total time complexity is O(N).
+
+-> Space Complexity: O(N)
+We use O(N) space to store the hash map. The recursion stack depth is O(N) in the worst case (skewed tree) and O(logN) 
+in the best case (balanced tree). The overall space complexity is dominated by the hash map, making it O(N).
+
+
+----
+
+📊 Comparison
+Aspect:	{Brute-Force Approach,	Optimized Approach}
+Time Complexity: {O(N^2),	O(N)}
+Space Complexity: {O(N^2) ,O(N)}
+
+
+Key Idea	Linear search and vector slicing.	Pre-computation with a hash map and index pointers.
