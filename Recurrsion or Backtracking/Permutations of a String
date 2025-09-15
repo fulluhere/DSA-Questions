@@ -1,0 +1,123 @@
+🔹 Problem Restatement
+We need to generate all unique permutations of a given string s.
+ -> The string may contain duplicate characters.
+ -> We must return each permutation only once.
+
+🔹 Examples
+Example 1
+Input: s = "ABC"
+Output:
+["ABC", "ACB", "BAC", "BCA", "CAB", "CBA"]
+👉 There are 3! = 6 unique permutations.
+
+Example 2
+Input: s = "ABSG"
+Output: 24 unique permutations (since 4! = 24).
+
+Example 3
+Input: s = "AAA"
+Output: ["AAA"]
+👉 All characters same → only 1 unique permutation.
+
+
+🔹 Approaches
+1. Brute Force Approach
+👉 Generate all permutations (including duplicates) and then use a set to remove duplicates.
+
+# Algorithm
+1. Generate permutations using recursion/backtracking.
+2. Store them in a set to automatically remove duplicates.
+3. Convert the set to a vector/array and return.
+
+C++ Code (Brute Force)
+
+#include <bits/stdc++.h>
+using namespace std;
+
+void permute(string s, int l, int r, set<string>& result) {
+    if (l == r) {
+        result.insert(s); // add to set to avoid duplicates
+        return;
+    }
+    for (int i = l; i <= r; i++) {
+        swap(s[l], s[i]);
+        permute(s, l + 1, r, result);
+        swap(s[l], s[i]); // backtrack
+    }
+}
+
+vector<string> getPermutations(string s) {
+    set<string> result;
+    permute(s, 0, s.size() - 1, result);
+    return vector<string>(result.begin(), result.end());
+}
+
+int main() {
+    string s = "AAB";
+    vector<string> ans = getPermutations(s);
+    for (auto &p : ans) cout << p << " ";
+    return 0;
+}
+
+
+⏱ Time Complexity: O(n! × n log n) (because of set insertions)
+📦 Space Complexity: O(n!)
+
+----
+
+2. Optimized Approach (Backtracking with Pruning)
+👉 Instead of generating duplicates, avoid them during recursion.
+
+Idea
+1. Sort the string first.
+2. While swapping, skip characters that are already used at the same recursion depth.
+
+
+#include <bits/stdc++.h>
+using namespace std;
+
+void backtrack(string &s, vector<bool> &used, string &current, vector<string> &result) {
+    if (current.size() == s.size()) {
+        result.push_back(current);
+        return;
+    }
+    for (int i = 0; i < s.size(); i++) {
+        if (used[i]) continue;
+        // skip duplicates
+        if (i > 0 && s[i] == s[i - 1] && !used[i - 1]) continue;
+        
+        used[i] = true;
+        current.push_back(s[i]);
+        backtrack(s, used, current, result);
+        current.pop_back();
+        used[i] = false;
+    }
+}
+
+vector<string> getPermutations(string s) {
+    sort(s.begin(), s.end()); // sort to handle duplicates
+    vector<string> result;
+    vector<bool> used(s.size(), false);
+    string current = "";
+    backtrack(s, used, current, result);
+    return result;
+}
+
+int main() {
+    string s = "AAB";
+    vector<string> ans = getPermutations(s);
+    for (auto &p : ans) cout << p << " ";
+    return 0;
+}
+
+
+⏱ Time Complexity: O(n! × n) (generate only unique ones)
+📦 Space Complexity: O(n) (recursion + used array)
+
+----
+
+🔹 Comparison
+Approach	Duplicates Removed:	{Time Complexity,	Space Complexity,	Notes}
+Brute Force	After generation:	{O(n! × n log n),	O(n!), 	Simple, but wastes time generating duplicates}
+Optimized	During recursion: 	{O(n! × n),	O(n),	Efficient, avoids duplicates early}
+
