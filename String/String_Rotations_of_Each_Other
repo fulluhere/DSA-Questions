@@ -1,0 +1,99 @@
+## Strings Rotations of Each Other
+
+🔹 Problem Restatement
+   We need to check if s2 is a rotation of s1.
+      ->Rotation means shifting characters to the left or right circularly.
+
+🔹 Examples
+Input: s1 = "abcd", s2 = "cdab"
+Output: true
+✅ "abcd" → "bcda" → "cdab" (rotation possible).
+
+Input: s1 = "aab", s2 = "aba"
+Output: true
+✅ "aab" → "aba" (rotation possible).
+
+Input: s1 = "abcd", s2 = "acbd"
+Output: false
+❌ No rotation gives "acbd".
+
+
+----
+
+🔹 Brute Force Approach
+
+👉 Try all rotations of s1 and check if any matches s2.
+
+# Algorithm
+ 1. If lengths differ, return false.
+ 2. For each rotation i (0 to n-1):
+     -> Rotate string by i positions.
+     -> Check if it equals s2.
+ 3. If yes → return true, else → false.
+
+-- code --
+
+#include <bits/stdc++.h>
+using namespace std;
+
+bool isRotationBrute(string s1, string s2) {
+    if (s1.size() != s2.size()) return false;
+    int n = s1.size();
+
+    for (int i = 0; i < n; i++) {
+        rotate(s1.begin(), s1.begin() + 1, s1.end()); // left rotation by 1
+        if (s1 == s2) return true;
+    }
+    return false;
+}
+
+int main() {
+    string s1 = "abcd", s2 = "cdab";
+    cout << (isRotationBrute(s1, s2) ? "true" : "false");
+    return 0;
+}
+
+
+⏱ Time Complexity: O(n²)
+📦 Space Complexity: O(1)
+
+----
+
+🔹 Optimized Approach
+
+👉 Use the trick:
+    -> Concatenate s1 + s1.
+    -> If s2 is a substring of s1+s1, then s2 is a rotation of s1.
+
+Q: Why it works?
+Example:
+s1 = "abcd" → "abcdabcd"
+  ->All rotations: "abcd", "bcda", "cdab", "dabc" are present inside "abcdabcd".
+
+-- C++ Code (Optimized)--
+
+#include <bits/stdc++.h>
+using namespace std;
+
+bool isRotation(string s1, string s2) {
+    if (s1.size() != s2.size()) return false;
+    string temp = s1 + s1;
+    return (temp.find(s2) != string::npos);
+}
+
+int main() {
+    string s1 = "abcd", s2 = "cdab";
+    cout << (isRotation(s1, s2) ? "true" : "false");
+    return 0;
+}
+
+
+⏱ Time Complexity: O(n)
+📦 Space Complexity: O(n)
+
+----
+
+🔹 Comparison
+Approach:	{Time Complexity,	Space Complexity	Method}
+Brute Force:	{O(n²), O(1),	Rotate one by one}
+Optimized: {O(n),	O(n),	Use s1+s1 substring search]
