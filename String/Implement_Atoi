@@ -1,0 +1,125 @@
+## Implement Atoi
+🔹 Problem: Implement atoi()
+
+We need to convert a string s into an integer without using built-in conversion functions.
+We must follow rules like handling whitespaces, signs, invalid characters, and integer overflow.
+
+🔹 Rules for Conversion:
+1- Skip leading whitespaces.
+2- Check sign: + (positive) or - (negative). If absent, default is positive.
+3- Read digits only (stop at first non-digit).
+4- Clamp the result:
+     -> If number > INT_MAX (2^31 – 1 = 2147483647) → return 2147483647.
+     -> If number < INT_MIN (-2^31 = -2147483648) → return -2147483648.
+5- If no valid digits → return 0.
+
+🔹 Examples
+Example 1
+Input: s = "-123"
+Output:-123
+
+Example 2
+Input: s = "  -"
+Output: 0
+
+----
+
+🔹 Approach 1: Brute Force
+
+👉 Steps:
+-> Use manual character checks (isdigit)
+-> Convert char → int using (ch - '0')
+-> Build number as string, then convert using stoll or manual multiplication
+
+This risks overflow unless we use long long first.
+
+## -- Code -- ##
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int myAtoiBrute(string s) {
+    int i = 0, n = s.size();
+
+    // Step 1: skip spaces
+    while (i < n && s[i] == ' ') i++;
+
+    // Step 2: sign
+    int sign = 1;
+    if (i < n && (s[i] == '+' || s[i] == '-')) {
+        if (s[i] == '-') sign = -1;
+        i++;
+    }
+
+    // Step 3: read digits into string
+    string numStr = "";
+    while (i < n && isdigit(s[i])) {
+        numStr.push_back(s[i]);
+        i++;
+    }
+    if (numStr.empty()) return 0; // no digits
+
+    // Step 4: convert manually (risk overflow, so use long long)
+    long long result = 0;
+    for (char c : numStr) {
+        result = result * 10 + (c - '0');
+        if (sign == 1 && result > INT_MAX) return INT_MAX;
+        if (sign == -1 && -result < INT_MIN) return INT_MIN;
+    }
+
+    return (int)(sign * result);
+}
+
+----
+
+
+🔹 Approach 2: Optimized
+
+👉 Instead of building a string, convert on the fly:
+  -> Multiply result by 10 and add new digit.
+  -> Stop immediately if overflow is detected.
+  -> Stop immediately if we exceed INT range.
+
+🧑‍💻 C++ Code (Optimized)
+
+#include <bits/stdc++.h>
+using namespace std;
+
+int myAtoi(string s) {
+    int i = 0, n = s.size();
+
+    // Step 1: Skip leading spaces
+    while (i < n && s[i] == ' ') i++;
+
+    // Step 2: Detect sign
+    int sign = 1;
+    if (i < n && (s[i] == '+' || s[i] == '-')) {
+        if (s[i] == '-') sign = -1;
+        i++;
+    }
+
+    // Step 3: Build number directly
+    long result = 0;
+    while (i < n && isdigit(s[i])) {
+        int digit = s[i] - '0';
+
+        // Step 4: Check overflow before it happens
+        if (result > (INT_MAX - digit) / 10) {
+            return (sign == 1) ? INT_MAX : INT_MIN;
+        }
+
+        result = result * 10 + digit;
+        i++;
+    }
+
+    return (int)(sign * result);
+}
+
+----
+
+
+📊 Comparison
+Approach:	{Brute Force Approach,	Optimized Approach}
+Time Complexity:	{O(N),	O(N)}
+Space Complexity:	{O(N) (extra string),	O(1)}
+
