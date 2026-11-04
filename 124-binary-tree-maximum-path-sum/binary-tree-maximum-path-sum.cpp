@@ -16,8 +16,8 @@ public:
         if(head == nullptr){
             return 0;
         }
-        int left = max(solve(head->left), 0);
-        int right = max(solve(head->right), 0); 
+        int left = max(0, solve(head->left));
+        int right = max(0, solve(head->right)); 
         
         ans = max(ans, head->val + left + right);
         return head->val +  max(left , right);
